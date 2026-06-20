@@ -1,4 +1,4 @@
-name: Postar previsão no Instagram
+name: Postar previsao no Instagram
 
 on:
   schedule:
@@ -29,26 +29,26 @@ jobs:
       - name: Definir modos
         id: modos
         run: |
-          if [ "${{ github.event.inputs.modo }}" != "" ]; then
-            echo "lista=${{ github.event.inputs.modo }}" >> $GITHUB_OUTPUT
-          elif [ "$(date -u +%H)" -ge "20" ]; then
-            echo "lista=amanha" >> $GITHUB_OUTPUT
+          if [ -n "${{ github.event.inputs.modo }}" ]; then
+            echo "lista=${{ github.event.inputs.modo }}" >> "$GITHUB_OUTPUT"
+          elif [ "$(date -u +%H)" -ge 20 ]; then
+            echo "lista=amanha" >> "$GITHUB_OUTPUT"
           elif [ "$(date -u +%u)" = "7" ]; then
-            echo "lista=diario semanal" >> $GITHUB_OUTPUT
+            echo "lista=diario semanal" >> "$GITHUB_OUTPUT"
           else
-            echo "lista=diario" >> $GITHUB_OUTPUT
+            echo "lista=diario" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Gerar imagens
         run: |
-          for m in ${{ steps.modos.outputs.lista }}; do python bot.py $m; done
+          for m in ${{ steps.modos.outputs.lista }}; do python bot.py "$m"; done
 
       - name: Commitar imagens
         run: |
           git config user.name "bot"
           git config user.email "bot@users.noreply.github.com"
           git add imagens/
-          git commit -m "cards $(date -u +%F_%H%M)" || echo "nada para commitar"
+          git commit -m "cards" || echo "nada para commitar"
           git push
 
       - name: Publicar no Instagram
@@ -57,4 +57,4 @@ jobs:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           REPO_RAW_BASE: https://raw.githubusercontent.com/${{ github.repository }}/main
         run: |
-          for m in ${{ steps.modos.outputs.lista }}; do python bot.py $m; done
+          for m in ${{ steps.modos.outputs.lista }}; do python bot.py "$m"; done
