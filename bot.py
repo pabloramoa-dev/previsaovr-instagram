@@ -180,11 +180,32 @@ def publicar_instagram(url_imagem, legenda):
     ig_user = os.environ["IG_USER_ID"]
     token = os.environ["IG_ACCESS_TOKEN"]
     base = f"https://graph.instagram.com/v21.0/{ig_user}"
+
+    # 1) Aguarda a imagem ficar publicamente acessivel no raw.githubusercontent.
+    #    Apos o git push, o CDN pode levar alguns segundos para servir o arquivo.
+    disponivel = False
+    for tentativa in range(12):
+        try:
+            head = requests.head(url_imagem, timeout=15, allow_redirects=True)
+            if head.status_code == 200:
+                disponivel = True
+                break
+        except requests.RequestException as e:
+            print(f"Tentativa {tentativa + 1}: erro ao checar imagem -> {e}")
+        time.sleep(6)
+    if not disponivel:
+        raise RuntimeError(f"Imagem nao ficou acessivel a tempo: {url_imagem}")
+
+    # 2) Cria o container de midia.
     r = requests.post(f"{base}/media", data={
         "image_url": url_imagem, "caption": legenda, "access_token": token
     }, timeout=60)
+    if not r.ok:
+        print("Resposta Instagram /media:", r.status_code, r.text)
     r.raise_for_status()
     container = r.json()["id"]
+
+    # 3) Aguarda o processamento do container.
     for _ in range(12):
         s = requests.get(f"https://graph.instagram.com/v21.0/{container}",
                          params={"fields": "status_code", "access_token": token},
@@ -192,9 +213,13 @@ def publicar_instagram(url_imagem, legenda):
         if s.get("status_code") == "FINISHED":
             break
         time.sleep(5)
+
+    # 4) Publica.
     r = requests.post(f"{base}/media_publish", data={
         "creation_id": container, "access_token": token
     }, timeout=60)
+    if not r.ok:
+        print("Resposta Instagram /media_publish:", r.status_code, r.text)
     r.raise_for_status()
     print("Publicado! ID:", r.json().get("id"))
 
