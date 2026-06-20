@@ -5,7 +5,7 @@ API: Instagram Login (graph.instagram.com) — tokens gerados no painel
 "Configuração da API com Login do Instagram".
 
 Modos:
-  python bot.py diario   -> card de HOJE (postar às 8h)
+  python bot.py diario   -> card de HOJE (poshtar às 8h)
   python bot.py amanha   -> card de AMANHÃ (postar às 20h da véspera)
   python bot.py semanal  -> card da SEMANA (domingo de manhã)
 
@@ -27,7 +27,7 @@ CIDADES = [
 ]
 # ------------------------------------------------
 
-W, H = 1080, 1350
+W, H = 1080, 1920
 DIAS = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"]
 DIAS_LONGO = ["segunda-feira", "terça-feira", "quarta-feira", "quinta-feira",
               "sexta-feira", "sábado", "domingo"]
