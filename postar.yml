@@ -1,0 +1,44 @@
+# Bot de Previsão do Tempo para Instagram
+
+Posta automaticamente todos os dias às 8h e 20h (horário de Brasília) o card de previsão da cidade, e aos domingos posta também o card da semana.
+
+## O que está incluído
+
+- `bot.py` — busca a previsão no Open-Meteo (gratuito, sem chave), gera o card 1080x1350 e publica no Instagram
+- `.github/workflows/postar.yml` — agendamento automático no GitHub Actions (gratuito)
+- `gerador-cards.html` — gerador manual: abra no navegador, escolha a cidade, baixe o PNG e copie a legenda
+
+## Passo a passo da automação
+
+### 1. Preparar o Instagram (uma vez só)
+
+1. Converta o perfil para **conta Profissional** (Configurações → Tipo de conta → Mudar para conta profissional → Criador ou Empresa).
+2. Crie uma **Página no Facebook** e vincule ao perfil do Instagram (Configurações do Instagram → Central de Contas → Adicionar Página).
+
+### 2. Criar o app na Meta (uma vez só)
+
+1. Acesse https://developers.facebook.com → Meus Apps → Criar App → tipo "Empresa".
+2. Adicione o produto **Instagram Graph API**.
+3. No **Graph API Explorer** (Ferramentas), gere um token com as permissões: `instagram_basic`, `instagram_content_publish`, `pages_read_engagement`.
+4. Troque por um **token de longa duração** (60 dias) em: https://developers.facebook.com/tools/debug/accesstoken/ → "Estender token".
+5. Descubra seu **IG_USER_ID**: no Graph Explorer, consulte `me/accounts` para pegar o ID da Página, depois `{page-id}?fields=instagram_business_account`.
+
+### 3. Configurar o repositório no GitHub
+
+1. Crie um repositório **público** (necessário para a imagem ter URL acessível pela Meta) e envie estes arquivos.
+2. Em Settings → Secrets and variables → Actions, crie dois secrets:
+   - `IG_USER_ID` — o ID encontrado no passo anterior
+   - `IG_ACCESS_TOKEN` — o token de longa duração
+3. Em Settings → Actions → General → Workflow permissions, marque **Read and write permissions**.
+4. Edite a lista `CIDADES` no início do `bot.py` com suas cidades.
+5. Pronto. Todo dia às 9h (Brasília) o workflow roda sozinho. Para testar agora: aba Actions → "Postar previsão no Instagram" → Run workflow.
+
+## Vários perfis (um por cidade)
+
+Crie um secret por cidade (`IG_USER_ID_VR`, `IG_TOKEN_VR`, `IG_USER_ID_PR`, ...) e duplique o passo "Publicar no Instagram" no workflow, um para cada perfil, deixando apenas a cidade correspondente ativa na lista `CIDADES` (ou passe a cidade por variável de ambiente).
+
+## Manutenção
+
+- O token de longa duração expira em ~60 dias. Renove no mesmo link do passo 2.4 (há como automatizar a renovação depois, se quiser).
+- Limite da Graph API: 50 publicações por conta a cada 24h — mais que suficiente.
+- Se um dia falhar, a aba Actions do GitHub mostra o erro.
