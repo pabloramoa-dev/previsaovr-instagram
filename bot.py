@@ -84,7 +84,7 @@ def buscar_previsao(lat, lon):
     return r.json()
 
 
-def blocos_info(img, dr, itens, y=880):
+def blocos_info(img, dr, itens, y=1180):
     total = len(itens) * 250 - 40
     inicio = (W - total) // 2
     for i, (v, r) in enumerate(itens):
@@ -105,18 +105,18 @@ def card_diario(cidade, d, caminho):
     gradiente(img, c1, c2)
     dr = ImageDraw.Draw(img)
     hoje = datetime.date.today()
-    centro(dr, "PREVISÃO DE HOJE", 80, fonte(34))
-    centro(dr, cidade["nome"].upper(), 140, fonte(64))
-    centro(dr, f"{DIAS[hoje.weekday()]}, {hoje.day} de {MESES[hoje.month-1]}", 225, fonte(34, False), (235, 242, 248))
-    centro(dr, f"{round(d['current']['temperature_2m'])}°", 400, fonte(220))
-    centro(dr, cond, 700, fonte(46, False))
+    centro(dr, "PREVISÃO DE HOJE", 120, fonte(34))
+    centro(dr, cidade["nome"].upper(), 180, fonte(64))
+    centro(dr, f"{DIAS[hoje.weekday()]}, {hoje.day} de {MESES[hoje.month-1]}", 265, fonte(34, False), (235, 242, 248))
+    centro(dr, f"{round(d['current']['temperature_2m'])}°", 560, fonte(220))
+    centro(dr, cond, 900, fonte(46, False))
     maxi = round(d["daily"]["temperature_2m_max"][0])
     mini = round(d["daily"]["temperature_2m_min"][0])
     chuva = d["daily"]["precipitation_probability_max"][0]
     umid = round(d["current"]["relative_humidity_2m"])
     dr = blocos_info(img, dr, [(f"{maxi}°", "Máxima"), (f"{mini}°", "Mínima"),
                                (f"{chuva}%", "Chuva"), (f"{umid}%", "Umidade")])
-    centro(dr, "Siga @previsaovr • todos os dias", 1230, fonte(30), (230, 238, 246))
+    centro(dr, "Siga @previsaovr • todos os dias", 1800, fonte(30), (230, 238, 246))
     img.convert("RGB").save(caminho, "PNG")
     return cond, maxi, mini, chuva
 
@@ -131,19 +131,19 @@ def card_amanha(cidade, d, caminho):
     gradiente(img, c1, c2)
     dr = ImageDraw.Draw(img)
     amanha = datetime.date.today() + datetime.timedelta(days=1)
-    centro(dr, "COMO SERÁ AMANHÃ?", 80, fonte(34))
-    centro(dr, cidade["nome"].upper(), 140, fonte(64))
+    centro(dr, "COMO SERÁ AMANHÃ?", 120, fonte(34))   
+    centro(dr, cidade["nome"].upper(), 180, fonte(64))
     centro(dr, f"{DIAS_LONGO[amanha.weekday()].capitalize()}, {amanha.day} de {MESES[amanha.month-1]}",
-           225, fonte(34, False), (235, 242, 248))
+              265, fonte(34, False), (235, 242, 248))
     maxi = round(d["daily"]["temperature_2m_max"][1])
     mini = round(d["daily"]["temperature_2m_min"][1])
     chuva = d["daily"]["precipitation_probability_max"][1]
-    centro(dr, f"{maxi}°", 380, fonte(200))
-    centro(dr, "máxima prevista", 640, fonte(34, False), (220, 230, 240))
-    centro(dr, cond, 710, fonte(46, False))
+    centro(dr, f"{maxi}°", 540, fonte(200))
+    centro(dr, "máxima prevista", 850, fonte(34, False), (220, 230, 240))
+    centro(dr, cond, 920, fonte(46, False))
     dr = blocos_info(img, dr, [(f"{maxi}°", "Máxima"), (f"{mini}°", "Mínima"),
                                (f"{chuva}%", "Chuva")])
-    centro(dr, "Amanhã às 8h tem atualização • @previsaovr", 1230, fonte(30), (230, 238, 246))
+    centro(dr, "Amanhã às 8h tem atualização • @previsaovr", 1800, fonte(30), (230, 238, 246))
     img.convert("RGB").save(caminho, "PNG")
     return cond, maxi, mini, chuva
 
@@ -152,8 +152,8 @@ def card_semanal(cidade, d, caminho):
     img = Image.new("RGBA", (W, H))
     gradiente(img, (22, 50, 76), (61, 106, 147))
     dr = ImageDraw.Draw(img)
-    centro(dr, "PREVISÃO DA SEMANA", 80, fonte(34))
-    centro(dr, cidade["nome"].upper(), 140, fonte(64))
+    centro(dr, "PREVISÃO DA SEMANA", 120, fonte(34))
+    centro(dr, cidade["nome"].upper(), 180, fonte(64))
     linhas = []
     for i in range(7):
         dt = datetime.date.fromisoformat(d["daily"]["time"][i])
@@ -161,7 +161,7 @@ def card_semanal(cidade, d, caminho):
         maxi = round(d["daily"]["temperature_2m_max"][i])
         mini = round(d["daily"]["temperature_2m_min"][i])
         chuva = d["daily"]["precipitation_probability_max"][i]
-        y = 270 + i * 135
+        y = 340 + i * 135
         caixa(img, [60, y, 1020, y + 115], 20, 55 if i == 0 else 25)
         dr = ImageDraw.Draw(img)
         rotulo = "HOJE" if i == 0 else DIAS[dt.weekday()]
@@ -170,7 +170,7 @@ def card_semanal(cidade, d, caminho):
         dr.text((800, y + 35), f"{maxi}°", font=fonte(44), fill=(255, 255, 255))
         dr.text((910, y + 35), f"{mini}°", font=fonte(44), fill=(180, 200, 216))
         linhas.append(f"{rotulo.title()}: {cond}, {mini}°–{maxi}° (chuva {chuva}%)")
-    centro(dr, "Siga @previsaovr • previsão diária", 1240, fonte(30), (230, 238, 246))
+    centro(dr, "Siga @previsaovr • previsão diária", 1800, fonte(30), (230, 238, 246))
     img.convert("RGB").save(caminho, "PNG")
     return linhas
 
