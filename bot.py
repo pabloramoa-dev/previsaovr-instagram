@@ -26,6 +26,8 @@ CIDADES = [
     {"nome": "Volta Redonda - RJ", "lat": -22.5202, "lon": -44.1043, "hashtag": "voltaredonda"},
 ]
 # ------------------------------------------------
+# Cidade do post temático de sexta à noite (previsão de sábado)
+ANGRA = {"nome": "Angra dos Reis - RJ", "lat": -23.0067, "lon": -44.3181, "hashtag": "angradosreis"}
 
 W, H = 1080, 1920
 DIAS = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"]
@@ -175,6 +177,32 @@ def card_semanal(cidade, d, caminho):
     return linhas
 
 
+def card_angra(d, caminho):
+    """Post de sexta à noite: previsão de SÁBADO para Angra dos Reis."""
+    img = Image.new("RGBA", (W, H))
+    cond, c1, c2 = tempo_info(d["daily"]["weather_code"][1])
+    # tom litorâneo: azul-mar mais vivo
+    c1 = (8, 78, 110)
+    c2 = (20, 140, 180)
+    gradiente(img, c1, c2)
+    dr = ImageDraw.Draw(img)
+    amanha = datetime.date.today() + datetime.timedelta(days=1)
+    centro(dr, "VAI PRA ANGRA AMANHÃ?", 150, fonte(64))
+    centro(dr, "Veja a previsão 👀", 250, fonte(44, False), (255, 209, 102))
+    centro(dr, "ANGRA DOS REIS", 420, fonte(70))
+    centro(dr, f"{DIAS_LONGO[amanha.weekday()].capitalize()}, {amanha.day} de {MESES[amanha.month-1]}",
+              510, fonte(38, False), (235, 242, 248))
+    maxi = round(d["daily"]["temperature_2m_max"][1])
+    mini = round(d["daily"]["temperature_2m_min"][1])
+    chuva = d["daily"]["precipitation_probability_max"][1]
+    centro(dr, f"{maxi}°", 640, fonte(230))
+    centro(dr, cond, 950, fonte(54, False))
+    dr = blocos_info(img, dr, [(f"{maxi}°", "Máxima"), (f"{mini}°", "Mínima"),
+                               (f"{chuva}%", "Chuva")])
+    centro(dr, "Bom fim de semana! 🏝️  @previsaovr", 1800, fonte(36), (230, 238, 246))
+    img.convert("RGB").save(caminho, "PNG")
+    return cond, maxi, mini, chuva
+
 def _aguardar_imagem(url_imagem):
     """Aguarda a imagem ficar publicamente acessivel no raw.githubusercontent.
     Apos o git push, o CDN pode levar alguns segundos para servir o arquivo."""
@@ -256,6 +284,26 @@ def main():
                        f"{dica}\n\n"
                        f"Amanhã às 8h tem atualização por aqui 📲\n\n"
                        f"#previsaodotempo #{slug} #clima #boanoite")
+        elif modo == "angra":
+            d_angra = buscar_previsao(ANGRA["lat"], ANGRA["lon"])
+            arquivo = f"imagens/{ANGRA['hashtag']}-angra-{hoje.isoformat()}.png"
+            cond, maxi, mini, chuva = card_angra(d_angra, arquivo)
+            dica = "Leve a capa de chuva! ☔" if chuva >= 60 else "Bora pra praia! 🌊"
+            legenda = ("VAI PRA ANGRA AMANHÃ? 🏝️\n\n"
+                       "Confere a previsão de sábado em Angra dos Reis antes de pegar a estrada!\n\n"
+                       f"{cond} • Máx {maxi}° / Mín {mini}° • {chuva}% de chance de chuva\n"
+                       f"{dica}\n\n"
+                       "Marca a galera da viagem 👇\n\n"
+                       "#angradosreis #litoral #fimdesemana #previsaodotempo #rj")
+            print(f"Card Angra gerado: {arquivo}")
+            if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
+                url_card = f"{raw_base}/{arquivo}"
+                publicar_instagram(url_card, legenda)
+                publicar_story(url_card)
+            else:
+                print("Sem credenciais — apenas a imagem foi gerada.")
+                print("Legenda:\n", legenda)
+            continue
         elif modo == "semanal":
             linhas = card_semanal(cidade, d, arquivo)
             legenda = (f"🗓️ Previsão da semana em {cidade['nome']}!\n\n"
