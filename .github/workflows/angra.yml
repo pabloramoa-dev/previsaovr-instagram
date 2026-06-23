@@ -1,0 +1,41 @@
+name: Post de Angra (sexta a noite)
+
+on:
+  schedule:
+    # 23:00 UTC de sexta = 20:00 (Brasilia, UTC-3) de sexta
+    - cron: "0 23 * * 5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  postar-angra:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests pillow
+
+      - name: Gerar imagem de Angra
+        run: python bot.py angra
+
+      - name: Commitar imagem
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add imagens/
+          git commit -m "card angra" || echo "nada para commitar"
+          git push
+
+      - name: Publicar no Instagram
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          REPO_RAW_BASE: https://raw.githubusercontent.com/${{ github.repository }}/main
+        run: python bot.py angra
