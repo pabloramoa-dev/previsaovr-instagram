@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Bot de previsão do tempo para Instagram (@previsaovr).
-API: Instagram Login (graph.instagram.com) — tokens gerados no painel
-"Configuração da API com Login do Instagram".
+Bot de previsÃ£o do tempo para Instagram (@previsaovr).
+API: Instagram Login (graph.instagram.com) â tokens gerados no painel
+"ConfiguraÃ§Ã£o da API com Login do Instagram".
 
 Modos:
-  python bot.py diario   -> card de HOJE (poshtar às 8h)
-  python bot.py amanha   -> card de AMANHÃ (postar às 20h da véspera)
-  python bot.py semanal  -> card da SEMANA (domingo de manhã)
+  python bot.py diario   -> card de HOJE (poshtar Ã s 8h)
+  python bot.py amanha   -> card de AMANHÃ (postar Ã s 20h da vÃ©spera)
+  python bot.py semanal  -> card da SEMANA (domingo de manhÃ£)
 
-Variáveis de ambiente (Secrets do GitHub):
+VariÃ¡veis de ambiente (Secrets do GitHub):
   IG_USER_ID      -> ID da conta (mostrado junto do token no painel)
   IG_ACCESS_TOKEN -> token de acesso (60 dias)
   REPO_RAW_BASE   -> ex.: https://raw.githubusercontent.com/SEUUSER/SEUREPO/main
@@ -24,16 +24,19 @@ from PIL import Image, ImageDraw, ImageFont
 # ----------------- SUAS CIDADES -----------------
 CIDADES = [
     {"nome": "Volta Redonda - RJ", "lat": -22.5202, "lon": -44.1043, "hashtag": "voltaredonda"},
+    {"nome": "Porto Real - RJ", "lat": -22.4178, "lon": -44.2906, "hashtag": "portoreal"},
+    {"nome": "Barra Mansa - RJ", "lat": -22.5446, "lon": -44.1717, "hashtag": "barramansa"},
+    {"nome": "Resende - RJ", "lat": -22.4683, "lon": -44.4467, "hashtag": "resende"},
 ]
 # ------------------------------------------------
-# Cidade do post temático de sexta à noite (previsão de sábado)
+# Cidade do post temÃ¡tico de sexta Ã  noite (previsÃ£o de sÃ¡bado)
 ANGRA = {"nome": "Angra dos Reis - RJ", "lat": -23.0067, "lon": -44.3181, "hashtag": "angradosreis"}
 
 W, H = 1080, 1920
-DIAS = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"]
-DIAS_LONGO = ["segunda-feira", "terça-feira", "quarta-feira", "quinta-feira",
-              "sexta-feira", "sábado", "domingo"]
-MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho",
+DIAS = ["SEG", "TER", "QUA", "QUI", "SEX", "SÃB", "DOM"]
+DIAS_LONGO = ["segunda-feira", "terÃ§a-feira", "quarta-feira", "quinta-feira",
+              "sexta-feira", "sÃ¡bado", "domingo"]
+MESES = ["janeiro", "fevereiro", "marÃ§o", "abril", "maio", "junho",
          "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
 
 FONT_DIR = "/usr/share/fonts/truetype/dejavu"
@@ -45,10 +48,10 @@ def fonte(tam, bold=True):
 
 
 def tempo_info(code):
-    if code == 0: return ("Céu limpo", (29, 111, 209), (95, 182, 242))
+    if code == 0: return ("CÃ©u limpo", (29, 111, 209), (95, 182, 242))
     if code <= 2: return ("Parcialmente nublado", (46, 124, 199), (127, 189, 232))
     if code == 3: return ("Nublado", (78, 100, 120), (142, 163, 181))
-    if code <= 48: return ("Névoa", (93, 112, 127), (159, 178, 191))
+    if code <= 48: return ("NÃ©voa", (93, 112, 127), (159, 178, 191))
     if code <= 57: return ("Chuvisco", (58, 99, 144), (123, 162, 196))
     if code <= 67: return ("Chuva", (44, 79, 116), (94, 133, 171))
     if code <= 77: return ("Neve", (106, 138, 165), (184, 205, 218))
@@ -101,30 +104,30 @@ def blocos_info(img, dr, itens, y=1180):
 
 
 def card_diario(cidade, d, caminho):
-    """Card de HOJE — postado às 8h, com temperatura atual."""
+    """Card de HOJE â postado Ã s 8h, com temperatura atual."""
     img = Image.new("RGBA", (W, H))
     cond, c1, c2 = tempo_info(d["current"]["weather_code"])
     gradiente(img, c1, c2)
     dr = ImageDraw.Draw(img)
     hoje = datetime.date.today()
-    centro(dr, "PREVISÃO DE HOJE", 120, fonte(40))
+    centro(dr, "PREVISÃO DE HOJE", 120, fonte(40))
     centro(dr, cidade["nome"].upper(), 180, fonte(74))
     centro(dr, f"{DIAS[hoje.weekday()]}, {hoje.day} de {MESES[hoje.month-1]}", 265, fonte(40, False), (235, 242, 248))
-    centro(dr, f"{round(d['current']['temperature_2m'])}°", 560, fonte(250))
+    centro(dr, f"{round(d['current']['temperature_2m'])}Â°", 560, fonte(250))
     centro(dr, cond, 900, fonte(54, False))
     maxi = round(d["daily"]["temperature_2m_max"][0])
     mini = round(d["daily"]["temperature_2m_min"][0])
     chuva = d["daily"]["precipitation_probability_max"][0]
     umid = round(d["current"]["relative_humidity_2m"])
-    dr = blocos_info(img, dr, [(f"{maxi}°", "Máxima"), (f"{mini}°", "Mínima"),
+    dr = blocos_info(img, dr, [(f"{maxi}Â°", "MÃ¡xima"), (f"{mini}Â°", "MÃ­nima"),
                                (f"{chuva}%", "Chuva"), (f"{umid}%", "Umidade")])
-    centro(dr, "Siga @previsaovr • todos os dias", 1800, fonte(36), (230, 238, 246))
+    centro(dr, "Siga @previsaovr â¢ todos os dias", 1800, fonte(36), (230, 238, 246))
     img.convert("RGB").save(caminho, "PNG")
     return cond, maxi, mini, chuva
 
 
 def card_amanha(cidade, d, caminho):
-    """Card de AMANHÃ — postado às 20h da véspera, usa dados do dia seguinte."""
+    """Card de AMANHÃ â postado Ã s 20h da vÃ©spera, usa dados do dia seguinte."""
     img = Image.new("RGBA", (W, H))
     cond, c1, c2 = tempo_info(d["daily"]["weather_code"][1])
     # tom levemente mais escuro: clima de "noite anterior"
@@ -133,19 +136,19 @@ def card_amanha(cidade, d, caminho):
     gradiente(img, c1, c2)
     dr = ImageDraw.Draw(img)
     amanha = datetime.date.today() + datetime.timedelta(days=1)
-    centro(dr, "COMO SERÁ AMANHÃ?", 120, fonte(40))
+    centro(dr, "COMO SERÃ AMANHÃ?", 120, fonte(40))
     centro(dr, cidade["nome"].upper(), 180, fonte(74))
     centro(dr, f"{DIAS_LONGO[amanha.weekday()].capitalize()}, {amanha.day} de {MESES[amanha.month-1]}",
               265, fonte(40, False), (235, 242, 248))
     maxi = round(d["daily"]["temperature_2m_max"][1])
     mini = round(d["daily"]["temperature_2m_min"][1])
     chuva = d["daily"]["precipitation_probability_max"][1]
-    centro(dr, f"{maxi}°", 540, fonte(230))
-    centro(dr, "máxima prevista", 850, fonte(40, False), (220, 230, 240))
+    centro(dr, f"{maxi}Â°", 540, fonte(230))
+    centro(dr, "mÃ¡xima prevista", 850, fonte(40, False), (220, 230, 240))
     centro(dr, cond, 920, fonte(54, False))
-    dr = blocos_info(img, dr, [(f"{maxi}°", "Máxima"), (f"{mini}°", "Mínima"),
+    dr = blocos_info(img, dr, [(f"{maxi}Â°", "MÃ¡xima"), (f"{mini}Â°", "MÃ­nima"),
                                (f"{chuva}%", "Chuva")])
-    centro(dr, "Amanhã às 8h tem atualização • @previsaovr", 1800, fonte(36), (230, 238, 246))
+    centro(dr, "AmanhÃ£ Ã s 8h tem atualizaÃ§Ã£o â¢ @previsaovr", 1800, fonte(36), (230, 238, 246))
     img.convert("RGB").save(caminho, "PNG")
     return cond, maxi, mini, chuva
 
@@ -154,7 +157,7 @@ def card_semanal(cidade, d, caminho):
     img = Image.new("RGBA", (W, H))
     gradiente(img, (22, 50, 76), (61, 106, 147))
     dr = ImageDraw.Draw(img)
-    centro(dr, "PREVISÃO DA SEMANA", 120, fonte(40))
+    centro(dr, "PREVISÃO DA SEMANA", 120, fonte(40))
     centro(dr, cidade["nome"].upper(), 180, fonte(74))
     linhas = []
     for i in range(7):
@@ -169,37 +172,78 @@ def card_semanal(cidade, d, caminho):
         rotulo = "HOJE" if i == 0 else DIAS[dt.weekday()]
         dr.text((95, y + 35), rotulo, font=fonte(42), fill=(255, 255, 255))
         dr.text((300, y + 40), cond, font=fonte(32, False), fill=(225, 235, 244))
-        dr.text((800, y + 35), f"{maxi}°", font=fonte(44), fill=(255, 255, 255))
-        dr.text((910, y + 35), f"{mini}°", font=fonte(44), fill=(180, 200, 216))
-        linhas.append(f"{rotulo.title()}: {cond}, {mini}°–{maxi}° (chuva {chuva}%)")
-    centro(dr, "Siga @previsaovr • previsão diária", 1800, fonte(30), (230, 238, 246))
+        dr.text((800, y + 35), f"{maxi}Â°", font=fonte(44), fill=(255, 255, 255))
+        dr.text((910, y + 35), f"{mini}Â°", font=fonte(44), fill=(180, 200, 216))
+        linhas.append(f"{rotulo.title()}: {cond}, {mini}Â°â{maxi}Â° (chuva {chuva}%)")
+    centro(dr, "Siga @previsaovr â¢ previsÃ£o diÃ¡ria", 1800, fonte(30), (230, 238, 246))
     img.convert("RGB").save(caminho, "PNG")
     return linhas
 
 
+def card_carrossel(cidade, d, caminho, posicao, total):
+    """Slide de uma cidade dentro do carrossel diario (postado as 6h30)."""
+    img = Image.new("RGBA", (W, H))
+    cond, c1, c2 = tempo_info(d["daily"]["weather_code"][0])
+    gradiente(img, c1, c2)
+    dr = ImageDraw.Draw(img)
+    hoje = datetime.date.today()
+    centro(dr, "PREVIS\u00c3O DE HOJE", 120, fonte(40))
+    centro(dr, cidade["nome"].upper(), 188, fonte(70))
+    centro(dr, f"{DIAS[hoje.weekday()]}, {hoje.day} de {MESES[hoje.month-1]}", 275, fonte(38, False), (235, 242, 248))
+    maxi = round(d["daily"]["temperature_2m_max"][0])
+    mini = round(d["daily"]["temperature_2m_min"][0])
+    chuva = d["daily"]["precipitation_probability_max"][0]
+    centro(dr, f"{maxi}\u00b0", 540, fonte(250))
+    centro(dr, cond, 880, fonte(54, False))
+    dr = blocos_info(img, dr, [(f"{maxi}\u00b0", "M\u00e1xima"), (f"{mini}\u00b0", "M\u00ednima"),
+                               (f"{chuva}%", "Chuva")])
+    centro(dr, f"{posicao}/{total}  \u2022  arrasta para o lado \u2192", 1700, fonte(34), (230, 238, 246))
+    centro(dr, "Siga @previsaovr \u2022 todos os dias", 1800, fonte(36), (230, 238, 246))
+    img.convert("RGB").save(caminho, "PNG")
+    return cond, maxi, mini, chuva
+
+
+def card_provocacao(caminho):
+    """Ultimo slide do carrossel: chamada para engajamento."""
+    img = Image.new("RGBA", (W, H))
+    gradiente(img, (24, 47, 79), (52, 92, 140))
+    dr = ImageDraw.Draw(img)
+    centro(dr, "E A SUA CIDADE?", 360, fonte(72))
+    centro(dr, "Faltou a previs\u00e3o da sua cidade", 520, fonte(44, False), (225, 235, 244))
+    centro(dr, "do Sul Fluminense?", 580, fonte(44, False), (225, 235, 244))
+    caixa(img, [140, 760, W - 140, 1080], 36, 45)
+    centro(dr, "Comenta o nome dela", 840, fonte(50))
+    centro(dr, "que a gente inclui no", 920, fonte(50))
+    centro(dr, "pr\u00f3ximo post! \U0001F447", 1000, fonte(50))
+    centro(dr, "Salve este post \U0001F4CC", 1300, fonte(46, False), (235, 242, 248))
+    centro(dr, "Marque algu\u00e9m da regi\u00e3o", 1380, fonte(46, False), (235, 242, 248))
+    centro(dr, "Siga @previsaovr \u2022 todos os dias", 1800, fonte(36), (230, 238, 246))
+    img.convert("RGB").save(caminho, "PNG")
+
+
 def card_angra(d, caminho):
-    """Post de sexta à noite: previsão de SÁBADO para Angra dos Reis."""
+    """Post de sexta Ã  noite: previsÃ£o de SÃBADO para Angra dos Reis."""
     img = Image.new("RGBA", (W, H))
     cond, c1, c2 = tempo_info(d["daily"]["weather_code"][1])
-    # tom litorâneo: azul-mar mais vivo
+    # tom litorÃ¢neo: azul-mar mais vivo
     c1 = (8, 78, 110)
     c2 = (20, 140, 180)
     gradiente(img, c1, c2)
     dr = ImageDraw.Draw(img)
     amanha = datetime.date.today() + datetime.timedelta(days=1)
-    centro(dr, "VAI PRA ANGRA AMANHÃ?", 150, fonte(64))
-    centro(dr, "Veja a previsão 👀", 250, fonte(44, False), (255, 209, 102))
+    centro(dr, "VAI PRA ANGRA AMANHÃ?", 150, fonte(64))
+    centro(dr, "Veja a previsÃ£o ð", 250, fonte(44, False), (255, 209, 102))
     centro(dr, "ANGRA DOS REIS", 420, fonte(70))
     centro(dr, f"{DIAS_LONGO[amanha.weekday()].capitalize()}, {amanha.day} de {MESES[amanha.month-1]}",
               510, fonte(38, False), (235, 242, 248))
     maxi = round(d["daily"]["temperature_2m_max"][1])
     mini = round(d["daily"]["temperature_2m_min"][1])
     chuva = d["daily"]["precipitation_probability_max"][1]
-    centro(dr, f"{maxi}°", 640, fonte(230))
+    centro(dr, f"{maxi}Â°", 640, fonte(230))
     centro(dr, cond, 950, fonte(54, False))
-    dr = blocos_info(img, dr, [(f"{maxi}°", "Máxima"), (f"{mini}°", "Mínima"),
+    dr = blocos_info(img, dr, [(f"{maxi}Â°", "MÃ¡xima"), (f"{mini}Â°", "MÃ­nima"),
                                (f"{chuva}%", "Chuva")])
-    centro(dr, "Bom fim de semana! 🏝️  @previsaovr", 1800, fonte(36), (230, 238, 246))
+    centro(dr, "Bom fim de semana! ðï¸  @previsaovr", 1800, fonte(36), (230, 238, 246))
     img.convert("RGB").save(caminho, "PNG")
     return cond, maxi, mini, chuva
 
@@ -265,10 +309,79 @@ def publicar_story(url_imagem):
     }, "story")
 
 
+def publicar_carrossel(urls_imagens, legenda):
+    """Publica um carrossel (varias imagens num unico post) via Graph API."""
+    ig_user = os.environ["IG_USER_ID"]
+    token = os.environ["IG_ACCESS_TOKEN"]
+    base = f"https://graph.instagram.com/v21.0/{ig_user}"
+    filhos = []
+    for url in urls_imagens:
+        _aguardar_imagem(url)
+        r = requests.post(f"{base}/media", data={
+            "image_url": url, "is_carousel_item": "true", "access_token": token
+        }, timeout=60)
+        if not r.ok:
+            print("Resposta Instagram /media (item):", r.status_code, r.text)
+        r.raise_for_status()
+        filhos.append(r.json()["id"])
+    r = requests.post(f"{base}/media", data={
+        "media_type": "CAROUSEL",
+        "children": ",".join(filhos),
+        "caption": legenda,
+        "access_token": token
+    }, timeout=60)
+    if not r.ok:
+        print("Resposta Instagram /media (carrossel):", r.status_code, r.text)
+    r.raise_for_status()
+    container = r.json()["id"]
+    for _ in range(12):
+        s = requests.get(f"https://graph.instagram.com/v21.0/{container}",
+                         params={"fields": "status_code", "access_token": token},
+                         timeout=30).json()
+        if s.get("status_code") == "FINISHED":
+            break
+        time.sleep(5)
+    r = requests.post(f"{base}/media_publish", data={
+        "creation_id": container, "access_token": token
+    }, timeout=60)
+    if not r.ok:
+        print("Resposta Instagram /media_publish (carrossel):", r.status_code, r.text)
+    r.raise_for_status()
+    print("Carrossel publicado! ID:", r.json().get("id"))
+
+
 def main():
     modo = sys.argv[1] if len(sys.argv) > 1 else "diario"
     raw_base = os.environ.get("REPO_RAW_BASE", "").rstrip("/")
     hoje = datetime.date.today()
+    if modo == "carrossel":
+        urls = []
+        n = len(CIDADES)
+        for i, cidade in enumerate(CIDADES, start=1):
+            d = buscar_previsao(cidade["lat"], cidade["lon"])
+            arquivo = f"imagens/{cidade['hashtag']}-carrossel-{hoje.isoformat()}.png"
+            card_carrossel(cidade, d, arquivo, i, n + 1)
+            print(f"Slide gerado: {arquivo}")
+            if raw_base:
+                urls.append(f"{raw_base}/{arquivo}")
+        arquivo_prov = f"imagens/provocacao-carrossel-{hoje.isoformat()}.png"
+        card_provocacao(arquivo_prov)
+        print(f"Slide gerado: {arquivo_prov}")
+        if raw_base:
+            urls.append(f"{raw_base}/{arquivo_prov}")
+        legenda = ("\u2600\ufe0f Bom dia, Sul Fluminense!\n\n"
+                   f"A previs\u00e3o de hoje ({hoje.day}/{hoje.month}) para as principais cidades da regi\u00e3o:\n\n"
+                   "\U0001F4CD Volta Redonda \u2022 Porto Real \u2022 Barra Mansa \u2022 Resende\n\n"
+                   "Arrasta para o lado para ver a sua cidade \u2192\n"
+                   "Faltou a sua? Comenta aqui que a gente inclui! \U0001F447\n\n"
+                   "Siga @previsaovr para receber todos os dias \U0001F4F2\n\n"
+                   "#previsaodotempo #sulfluminense #voltaredonda #portoreal #barramansa #resende #clima #rj #bomdia")
+        if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
+            publicar_carrossel(urls, legenda)
+        else:
+            print("Sem credenciais \u2014 apenas os slides foram gerados.")
+            print("Legenda:\n", legenda)
+        return
     for cidade in CIDADES:
         d = buscar_previsao(cidade["lat"], cidade["lon"])
         slug = cidade["hashtag"]
@@ -277,23 +390,23 @@ def main():
         if modo == "amanha":
             cond, maxi, mini, chuva = card_amanha(cidade, d, arquivo)
             amanha = hoje + datetime.timedelta(days=1)
-            dica = "Já deixe o guarda-chuva separado! ☔" if chuva >= 60 else "Pode planejar o dia tranquilo! 😎"
-            legenda = (f"🌙 Boa noite, {nome_curto}!\n\n"
-                       f"Amanhã ({DIAS_LONGO[amanha.weekday()]}, {amanha.day}/{amanha.month}):\n"
-                       f"{cond} • Máx {maxi}° / Mín {mini}° • {chuva}% de chance de chuva\n\n"
+            dica = "JÃ¡ deixe o guarda-chuva separado! â" if chuva >= 60 else "Pode planejar o dia tranquilo! ð"
+            legenda = (f"ð Boa noite, {nome_curto}!\n\n"
+                       f"AmanhÃ£ ({DIAS_LONGO[amanha.weekday()]}, {amanha.day}/{amanha.month}):\n"
+                       f"{cond} â¢ MÃ¡x {maxi}Â° / MÃ­n {mini}Â° â¢ {chuva}% de chance de chuva\n\n"
                        f"{dica}\n\n"
-                       f"Amanhã às 8h tem atualização por aqui 📲\n\n"
+                       f"AmanhÃ£ Ã s 8h tem atualizaÃ§Ã£o por aqui ð²\n\n"
                        f"#previsaodotempo #{slug} #clima #boanoite")
         elif modo == "angra":
             d_angra = buscar_previsao(ANGRA["lat"], ANGRA["lon"])
             arquivo = f"imagens/{ANGRA['hashtag']}-angra-{hoje.isoformat()}.png"
             cond, maxi, mini, chuva = card_angra(d_angra, arquivo)
-            dica = "Leve a capa de chuva! ☔" if chuva >= 60 else "Bora pra praia! 🌊"
-            legenda = ("VAI PRA ANGRA AMANHÃ? 🏝️\n\n"
-                       "Confere a previsão de sábado em Angra dos Reis antes de pegar a estrada!\n\n"
-                       f"{cond} • Máx {maxi}° / Mín {mini}° • {chuva}% de chance de chuva\n"
+            dica = "Leve a capa de chuva! â" if chuva >= 60 else "Bora pra praia! ð"
+            legenda = ("VAI PRA ANGRA AMANHÃ? ðï¸\n\n"
+                       "Confere a previsÃ£o de sÃ¡bado em Angra dos Reis antes de pegar a estrada!\n\n"
+                       f"{cond} â¢ MÃ¡x {maxi}Â° / MÃ­n {mini}Â° â¢ {chuva}% de chance de chuva\n"
                        f"{dica}\n\n"
-                       "Marca a galera da viagem 👇\n\n"
+                       "Marca a galera da viagem ð\n\n"
                        "#angradosreis #litoral #fimdesemana #previsaodotempo #rj")
             print(f"Card Angra gerado: {arquivo}")
             if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
@@ -301,23 +414,23 @@ def main():
                 publicar_instagram(url_card, legenda)
                 publicar_story(url_card)
             else:
-                print("Sem credenciais — apenas a imagem foi gerada.")
+                print("Sem credenciais â apenas a imagem foi gerada.")
                 print("Legenda:\n", legenda)
             continue
         elif modo == "semanal":
             linhas = card_semanal(cidade, d, arquivo)
-            legenda = (f"🗓️ Previsão da semana em {cidade['nome']}!\n\n"
+            legenda = (f"ðï¸ PrevisÃ£o da semana em {cidade['nome']}!\n\n"
                        + "\n".join(linhas)
-                       + "\n\nSalve este post e marque alguém da cidade! 📍"
+                       + "\n\nSalve este post e marque alguÃ©m da cidade! ð"
                        + f"\n\n#previsaodotempo #{slug} #clima #tempo")
         else:
             cond, maxi, mini, chuva = card_diario(cidade, d, arquivo)
-            dica = "Leve o guarda-chuva! ☔" if chuva >= 60 else "Aproveite o dia! 😎"
-            legenda = (f"☀️ Bom dia, {nome_curto}!\n\n"
-                       f"Previsão de hoje ({hoje.day}/{hoje.month}):\n"
-                       f"{cond} • Máx {maxi}° / Mín {mini}° • {chuva}% de chance de chuva\n\n"
+            dica = "Leve o guarda-chuva! â" if chuva >= 60 else "Aproveite o dia! ð"
+            legenda = (f"âï¸ Bom dia, {nome_curto}!\n\n"
+                       f"PrevisÃ£o de hoje ({hoje.day}/{hoje.month}):\n"
+                       f"{cond} â¢ MÃ¡x {maxi}Â° / MÃ­n {mini}Â° â¢ {chuva}% de chance de chuva\n\n"
                        f"Vai sair de casa? {dica}\n\n"
-                       f"Siga @previsaovr para receber todos os dias 📲\n\n"
+                       f"Siga @previsaovr para receber todos os dias ð²\n\n"
                        f"#previsaodotempo #{slug} #clima #bomdia")
         print(f"Card gerado: {arquivo}")
         if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
@@ -325,7 +438,7 @@ def main():
             publicar_instagram(url_card, legenda)
             publicar_story(url_card)
         else:
-            print("Sem credenciais — apenas a imagem foi gerada.")
+            print("Sem credenciais â apenas a imagem foi gerada.")
             print("Legenda:\n", legenda)
 
 
