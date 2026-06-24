@@ -1,0 +1,55 @@
+name: Detector de alertas climaticos
+
+on:
+  schedule:
+    # a cada 30 minutos (solucao-ponte ate a VM Oracle ficar pronta)
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: alertas
+  cancel-in-progress: false
+
+jobs:
+  alertas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests pillow
+
+      - name: Detectar e gerar cards
+        run: python alerta.py --apenas-gerar
+
+      - name: Commitar cards e fila
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add imagens/ alertas_fila.json
+          git commit -m "alertas: cards + fila" || echo "nada para commitar"
+          git pull --rebase || true
+          git push || echo "nada para enviar"
+
+      - name: Publicar alertas
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          REPO_RAW_BASE: https://raw.githubusercontent.com/${{ github.repository }}/main
+        run: python alerta.py --apenas-publicar
+
+      - name: Commitar estado dos alertas
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add alertas_estado.json alertas_fila.json
+          git commit -m "alertas: estado atualizado" || echo "nada para commitar"
+          git pull --rebase || true
+          git push || echo "nada para enviar"
