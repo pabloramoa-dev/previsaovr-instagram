@@ -14,6 +14,7 @@ Variaveis de ambiente (iguais ao bot.py):
     IG_USER_ID       -> ID da conta
     IG_ACCESS_TOKEN  -> token de acesso
     REPO_RAW_BASE    -> base publica das imagens (raw do GitHub) OU servidor proprio
+    PUBLICAR_REEL    -> "true" para publicar tambem como Reel (requer ffmpeg)
 
 Uso:
     python alerta.py            -> roda uma verificacao
@@ -26,6 +27,11 @@ import time
 import datetime
 import requests
 from PIL import Image, ImageDraw, ImageFont
+try:
+    from reel import gerar_reel, publicar_reel as _publicar_reel
+    _REEL_DISPONIVEL = True
+except ImportError:
+    _REEL_DISPONIVEL = False
 
 # ------------------------------------------------------------------
 # Cidades monitoradas (mesmas do bot.py + Angra)
@@ -388,6 +394,21 @@ def publicar_fila():
         try:
             publicar(f"{raw_base}/{item['arquivo']}", item["legenda"])
             registrar(estado, item["chave"], item["evento"])
+            # --- Reel opcional ---
+            if _REEL_DISPONIVEL and os.environ.get("PUBLICAR_REEL", "").lower() == "true":
+                try:
+                    png_path = item["arquivo"]
+                    mp4_path = os.path.splitext(png_path)[0] + ".mp4"
+                    gerar_reel(png_path, mp4_path)
+                    import subprocess as _sp
+                    _sp.run(["git", "add", mp4_path], check=False)
+                    _sp.run(["git", "commit", "-m", f"reel: {os.path.basename(mp4_path)}"], check=False)
+                    _sp.run(["git", "push"], check=False)
+                    import time as _t; _t.sleep(5)
+                    url_mp4 = f"{raw_base}/{mp4_path}"
+                    _publicar_reel(url_mp4, item["legenda"])
+                except Exception as re:
+                    print(f"Reel ignorado (erro nao critico): {re}")
         except Exception as e:
             print(f"Erro ao publicar {item['chave']}: {e}")
     salvar_estado(estado)
