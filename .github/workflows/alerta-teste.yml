@@ -1,0 +1,31 @@
+name: Teste do card de alerta
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  teste-alerta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests pillow
+
+      - name: Gerar card de exemplo
+        run: python alerta.py --teste
+
+      - name: Commitar imagem de exemplo
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add imagens/
+          git commit -m "card de exemplo de alerta" || echo "nada para commitar"
+          git push
