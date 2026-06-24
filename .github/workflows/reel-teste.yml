@@ -1,4 +1,4 @@
-name: "Reel â teste (gera MP4 sem publicar)"
+name: "Reel - teste (gera MP4 sem publicar)"
 
 on:
   workflow_dispatch:
