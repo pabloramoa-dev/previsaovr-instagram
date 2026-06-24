@@ -1,0 +1,12 @@
+# Credenciais - NUNCA commitar
+.env
+*.env
+!deploy/.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Sistema
+.DS_Store
