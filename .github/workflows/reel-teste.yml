@@ -1,4 +1,4 @@
-name: "Reel — teste (gera MP4 sem publicar)"
+name: "Reel â teste (gera MP4 sem publicar)"
 
 on:
   workflow_dispatch:
@@ -14,6 +14,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Instalar ffmpeg
+        run: sudo apt-get install -y ffmpeg
 
       - name: Instalar dependencias Python
         run: pip install requests Pillow
