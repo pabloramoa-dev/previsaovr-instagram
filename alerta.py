@@ -335,17 +335,16 @@ def _exemplo():
     print("Legenda:\n", montar_legenda(cidade, evento))
 
 
-def main():
-    if "--teste" in sys.argv:
-        _exemplo()
-        return
+FILA_ARQ = os.path.join(os.path.dirname(os.path.abspath(__file__)), "alertas_fila.json")
 
-    raw_base = os.environ.get("REPO_RAW_BASE", "").rstrip("/")
+
+def detectar_e_gerar():
+    """Fase 1: detecta eventos, aplica anti-falso-alarme, gera os cards e grava
+    uma fila (alertas_fila.json) com o que deve ser publicado. NAO publica."""
     estado = carregar_estado()
     hoje = datetime.date.today().isoformat()
-    houve_publicacao = False
     os.makedirs("imagens", exist_ok=True)
-
+    fila = []
     for cidade in CIDADES:
         try:
             dados = buscar_previsao(cidade["lat"], cidade["lon"])
@@ -359,22 +358,57 @@ def main():
         if not deve_publicar(estado, chave, evento):
             print(f"[skip] {chave} nivel {evento['nivel']} ainda em cooldown.")
             continue
-
         arquivo = f"imagens/alerta-{cidade['hashtag']}-{evento['tipo']}-{hoje}.png"
         card_alerta(cidade, evento, arquivo)
         legenda = montar_legenda(cidade, evento)
-        print(f"ALERTA {chave} nivel {evento['nivel']} -> {arquivo}")
+        print(f"ALERTA detectado: {chave} nivel {evento['nivel']} -> {arquivo}")
+        fila.append({"chave": chave, "arquivo": arquivo, "legenda": legenda, "evento": evento})
+    with open(FILA_ARQ, "w", encoding="utf-8") as f:
+        json.dump(fila, f, ensure_ascii=False, indent=2)
+    print(f"{len(fila)} alerta(s) na fila.")
+    return fila
 
-        if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
-            publicar(f"{raw_base}/{arquivo}", legenda)
-            registrar(estado, chave, evento)
-            houve_publicacao = True
-        else:
-            print("Sem credenciais/REPO_RAW_BASE \u2014 apenas o card foi gerado.")
-            print("Legenda:\n", legenda)
 
-    if houve_publicacao:
-        salvar_estado(estado)
+def publicar_fila():
+    """Fase 2: le a fila, publica cada card e atualiza o estado (cooldown)."""
+    try:
+        with open(FILA_ARQ, "r", encoding="utf-8") as f:
+            fila = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        fila = []
+    if not fila:
+        print("Fila vazia - nada a publicar.")
+        return
+    raw_base = os.environ.get("REPO_RAW_BASE", "").rstrip("/")
+    if not (raw_base and os.environ.get("IG_ACCESS_TOKEN")):
+        print("Sem credenciais/REPO_RAW_BASE - publicacao ignorada.")
+        return
+    estado = carregar_estado()
+    for item in fila:
+        try:
+            publicar(f"{raw_base}/{item['arquivo']}", item["legenda"])
+            registrar(estado, item["chave"], item["evento"])
+        except Exception as e:
+            print(f"Erro ao publicar {item['chave']}: {e}")
+    salvar_estado(estado)
+    with open(FILA_ARQ, "w", encoding="utf-8") as f:
+        json.dump([], f)
+    print("Publicacao concluida.")
+
+
+def main():
+    if "--teste" in sys.argv:
+        _exemplo()
+        return
+    if "--apenas-gerar" in sys.argv:
+        detectar_e_gerar()
+        return
+    if "--apenas-publicar" in sys.argv:
+        publicar_fila()
+        return
+    fila = detectar_e_gerar()
+    if fila:
+        publicar_fila()
     else:
         print("Nenhum alerta novo para publicar.")
 
