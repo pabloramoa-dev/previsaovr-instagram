@@ -1,0 +1,19 @@
+name: Telegram - teste (envia mensagem de exemplo)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  testar-telegram:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar dependencias
+        run: pip install requests Pillow
+
+      - name: Testar telegram_bot.py (envia mensagem para o canal)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python telegram_bot.py --teste
