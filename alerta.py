@@ -240,15 +240,13 @@ def card_alerta(cidade, evento, caminho):
     dr = ImageDraw.Draw(img)
     agora = datetime.datetime.now()
     # faixa superior
-    centro(dr, f"{emoji}  {rotulo}  {emoji}", 150, fonte(58))
+    centro(dr, rotulo, 150, fonte(58))
     centro(dr, cidade["nome"].upper(), 250, fonte(64))
-    # icone grande do tipo
-    et = EMOJI_TIPO.get(evento["tipo"], "\u26a0\ufe0f")
-    try:
-        fbig = fonte(220)
-    except Exception:
-        fbig = fonte(200)
-    centro(dr, et, 430, fbig)
+    # faixa central com o tipo do evento (sem emoji: DejaVu nao tem glifo colorido)
+    rotulo_tipo = {"chuva": "CHUVA", "vento": "VENTO", "calor": "CALOR", "frio": "FRIO"}.get(evento["tipo"], "ALERTA")
+    caixa(img, [120, 430, W - 120, 700], 40, 35)
+    dr = ImageDraw.Draw(img)
+    centro(dr, rotulo_tipo, 500, fonte(150))
     # titulo do evento
     centro(dr, evento["titulo"], 760, fonte(70))
     # descricao quebrada em linhas dentro de uma caixa
@@ -261,7 +259,7 @@ def card_alerta(cidade, evento, caminho):
         y += 64
     # rodape
     centro(dr, f"Atualizado as {agora.strftime('%H:%M')} \u2022 fonte: Open-Meteo", 1640, fonte(34), (250, 245, 240))
-    centro(dr, "Siga @previsaovr e ative as notificacoes \U0001F514", 1780, fonte(38), (255, 255, 255))
+    centro(dr, "Siga @previsaovr e ative as notificacoes!", 1780, fonte(38), (255, 255, 255))
     img.convert("RGB").save(caminho, "PNG")
 
 
