@@ -1,0 +1,32 @@
+name: "Reel — teste (gera MP4 sem publicar)"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  gerar-reel:
+    runs-on: ubuntu-latest
+    env:
+      IG_USER_ID:       ${{ secrets.IG_USER_ID }}
+      IG_ACCESS_TOKEN:  ${{ secrets.IG_ACCESS_TOKEN }}
+      GITHUB_TOKEN_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar dependencias Python
+        run: pip install requests Pillow
+
+      - name: Gerar card de alerta de exemplo (PNG)
+        run: python alerta.py --teste
+
+      - name: Gerar Reel (MP4) a partir do PNG
+        run: python reel.py --teste imagens/exemplo-alerta.png
+
+      - name: Upload do MP4 como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: reel-exemplo
+          path: imagens/exemplo-alerta.mp4
+          retention-days: 3
