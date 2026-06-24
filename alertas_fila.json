@@ -1,15 +1,1 @@
-[
-  {
-    "chave": "angradosreis:chuva",
-    "arquivo": "imagens/alerta-angradosreis-chuva-2026-06-24.png",
-    "legenda": "⚠️ ATENCAO: Chuva Forte A Caminho em Angra dos Reis!\n\nAte 6 mm de chuva nas proximas horas em Angra dos Reis.\n\nCompartilhe com quem mora ou vai sair por ai agora 🔁\nMarque alguem da regiao para avisar 👇\n\nSiga @previsaovr e ative as notificacoes para nao perder nenhum alerta 🔔\n\n#alerta #angradosreis #sulfluminense #previsaodotempo #chuva #rj",
-    "evento": {
-      "tipo": "chuva",
-      "nivel": 1,
-      "valor": 5.5,
-      "titulo": "CHUVA FORTE A CAMINHO",
-      "descricao": "Ate 6 mm de chuva nas proximas horas em Angra dos Reis.",
-      "cidade_nome": "Angra dos Reis - RJ"
-    }
-  }
-]
+[]
