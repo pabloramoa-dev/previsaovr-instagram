@@ -32,6 +32,11 @@ try:
     _REEL_DISPONIVEL = True
 except ImportError:
     _REEL_DISPONIVEL = False
+try:
+    from telegram_bot import enviar_alerta as _tg_enviar_alerta
+    _TELEGRAM_DISPONIVEL = True
+except ImportError:
+    _TELEGRAM_DISPONIVEL = False
 
 # ------------------------------------------------------------------
 # Cidades monitoradas (mesmas do bot.py + Angra)
@@ -368,6 +373,7 @@ def detectar_e_gerar():
         card_alerta(cidade, evento, arquivo)
         legenda = montar_legenda(cidade, evento)
         print(f"ALERTA detectado: {chave} nivel {evento['nivel']} -> {arquivo}")
+        evento["cidade_nome"] = cidade["nome"]
         fila.append({"chave": chave, "arquivo": arquivo, "legenda": legenda, "evento": evento})
     with open(FILA_ARQ, "w", encoding="utf-8") as f:
         json.dump(fila, f, ensure_ascii=False, indent=2)
@@ -394,6 +400,16 @@ def publicar_fila():
         try:
             publicar(f"{raw_base}/{item['arquivo']}", item["legenda"])
             registrar(estado, item["chave"], item["evento"])
+            # --- Telegram opcional ---
+            if _TELEGRAM_DISPONIVEL:
+                try:
+                    _tg_enviar_alerta(
+                        item["evento"].get("cidade_nome", item["chave"].split(":")[0]),
+                        item["evento"],
+                        foto_path=item.get("arquivo"),
+                    )
+                except Exception as te:
+                    print(f"Telegram ignorado (erro nao critico): {te}")
             # --- Reel opcional ---
             if _REEL_DISPONIVEL and os.environ.get("PUBLICAR_REEL", "").lower() == "true":
                 try:
