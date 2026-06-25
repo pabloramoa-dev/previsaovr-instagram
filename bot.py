@@ -293,8 +293,9 @@ def card_panorama(d, frase, caminho):
         centro(dr, ln, y, fonte(64))
         y += 90
     # chamada para comentario
-    centro(dr, "E a\u00ed na SUA cidade?", 1320, fonte(50), (255, 209, 102))
-    cta = quebrar("Comenta aqui como esta o tempo hoje na sua cidade!", 26)
+    centro(dr, "Voc\u00ea est\u00e1 gostando do frio", 1300, fonte(48), (255, 209, 102))
+    centro(dr, "ou prefere o sol?", 1364, fonte(48), (255, 209, 102))
+    cta = quebrar("Conta pra gente aqui nos comentarios!", 26)
     yc = 1440
     for ln in cta:
         centro(dr, ln, yc, fonte(46, False), (235, 242, 248))
@@ -474,7 +475,7 @@ def main():
         print(f"Card panorama gerado: {arquivo}")
         legenda = ("\U0001F4C5 Panorama da semana no Sul Fluminense!\n\n"
                    f"{frase}.\n\n"
-                   "E a\u00ed na SUA cidade, como est\u00e1 o tempo hoje? Comenta aqui! \U0001F447\n\n"
+                   "E a\u00ed, voc\u00ea est\u00e1 gostando do frio ou j\u00e1 prefere o sol? Comenta aqui pra gente! \U0001F447\n\n"
                    "Siga @previsaovr para o resumo todos os dias \U0001F4F2\n\n"
                    "#previsaodotempo #sulfluminense #clima #rj #voltaredonda #tempo")
         if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
