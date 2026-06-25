@@ -459,7 +459,7 @@ def main():
                    "Faltou a sua cidade? Comenta aqui que a gente inclui! \U0001F447\n\n"
                    "\U0001F4F8 Manda no Direct sua foto ou v\u00eddeo do tempo a\u00ed na sua cidade que a gente publica no perfil! \U0001F64C\n\n"
                    "Siga @previsaovr para receber todos os dias \U0001F4F2\n\n"
-                   "#previsaodotempo #sulfluminense #voltaredonda #portoreal #barramansa #resende #clima #rj #bomdia")
+                   "#previsaodotempo #sulfluminense #voltaredonda #barramansa #resende #angradosreis #barradopirai #tempovr #clima #rj #bomdia")
         if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
             publicar_carrossel(urls, legenda)
         else:
@@ -477,7 +477,7 @@ def main():
                    f"{frase}.\n\n"
                    "E a\u00ed, voc\u00ea est\u00e1 gostando do frio ou j\u00e1 prefere o sol? Comenta aqui pra gente! \U0001F447\n\n"
                    "Siga @previsaovr para o resumo todos os dias \U0001F4F2\n\n"
-                   "#previsaodotempo #sulfluminense #clima #rj #voltaredonda #tempo")
+                   "#previsaodotempo #sulfluminense #voltaredonda #barramansa #resende #angradosreis #tempovr #clima #rj #tempo")
         if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
             url_card = f"{raw_base}/{arquivo}"
             publicar_instagram(url_card, legenda)
@@ -499,7 +499,7 @@ def main():
                        f"{cond} \u2022 M\u00e1x {maxi}\u00b0 / M\u00edn {mini}\u00b0 \u2022 {chuva}% de chance de chuva\n\n"
                        f"{dica}\n\n"
                        f"Amanh\u00e3 \u00e0s 8h tem atualiza\u00e7\u00e3o por aqui \U0001f4f2\n\n"
-                       f"#previsaodotempo #{slug} #clima #boanoite")
+                       f"#previsaodotempo #{slug} #sulfluminense #tempovr #clima #boanoite")
         elif modo == "angra":
             d_angra = buscar_previsao(ANGRA["lat"], ANGRA["lon"])
             arquivo = f"imagens/{ANGRA['hashtag']}-angra-{hoje.isoformat()}.png"
@@ -510,7 +510,7 @@ def main():
                        f"{cond} \u2022 M\u00e1x {maxi}\u00b0 / M\u00edn {mini}\u00b0 \u2022 {chuva}% de chance de chuva\n"
                        f"{dica}\n\n"
                        "Marca a galera da viagem \U0001f447\n\n"
-                       "#angradosreis #litoral #fimdesemana #previsaodotempo #rj")
+                       "#angradosreis #litoral #fimdesemana #previsaodotempo #sulfluminense #tempovr #rj")
             print(f"Card Angra gerado: {arquivo}")
             if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
                 url_card = f"{raw_base}/{arquivo}"
@@ -525,7 +525,7 @@ def main():
             legenda = (f"\U0001f5d3\ufe0f Previs\u00e3o da semana em {cidade['nome']}!\n\n"
                        + "\n".join(linhas)
                        + "\n\nSalve este post e marque algu\u00e9m da cidade! \U0001f4cd"
-                       + f"\n\n#previsaodotempo #{slug} #clima #tempo")
+                       + f"\n\n#previsaodotempo #{slug} #sulfluminense #tempovr #clima #tempo")
         else:
             cond, maxi, mini, chuva = card_diario(cidade, d, arquivo)
             dica = "Leve o guarda-chuva! \u2614" if chuva >= 60 else "Aproveite o dia! \U0001f60e"
@@ -534,7 +534,7 @@ def main():
                        f"{cond} \u2022 M\u00e1x {maxi}\u00b0 / M\u00edn {mini}\u00b0 \u2022 {chuva}% de chance de chuva\n\n"
                        f"Vai sair de casa? {dica}\n\n"
                        f"Siga @previsaovr para receber todos os dias \U0001f4f2\n\n"
-                       f"#previsaodotempo #{slug} #clima #bomdia")
+                       f"#previsaodotempo #{slug} #sulfluminense #tempovr #clima #bomdia")
         print(f"Card gerado: {arquivo}")
         if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
             url_card = f"{raw_base}/{arquivo}"
