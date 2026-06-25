@@ -324,9 +324,9 @@ def montar_legenda(cidade, evento):
         f"{emoji} {rotulo}: {evento['titulo'].title()} em {nome}!\n\n"
         f"{evento['descricao']}\n\n"
         "Compartilhe com quem mora ou vai sair por ai agora \U0001F501\n"
-        "Marque alguem da regiao para avisar \U0001F447\n\n"
+        "Marca alguem que PRECISA saber disso \U0001F447\n\n"
         "Siga @previsaovr e ative as notificacoes para nao perder nenhum alerta \U0001F514\n\n"
-        f"#alerta #{cidade['hashtag']} #sulfluminense #previsaodotempo #{evento['tipo']} #rj"
+        f"#alerta #{cidade['hashtag']} #sulfluminense #tempovr #previsaodotempo #{evento['tipo']} #rj"
     )
 
 
