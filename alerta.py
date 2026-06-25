@@ -39,13 +39,12 @@ except ImportError:
     _TELEGRAM_DISPONIVEL = False
 
 # ------------------------------------------------------------------
-# Cidades monitoradas (mesmas do bot.py + Angra)
+# Cidades monitoradas para alertas de emergencia (Angra removida: so previsao sexta 15h)
 CIDADES = [
     {"nome": "Volta Redonda - RJ", "lat": -22.5202, "lon": -44.1043, "hashtag": "voltaredonda"},
     {"nome": "Porto Real - RJ", "lat": -22.4178, "lon": -44.2906, "hashtag": "portoreal"},
     {"nome": "Barra Mansa - RJ", "lat": -22.5446, "lon": -44.1717, "hashtag": "barramansa"},
     {"nome": "Resende - RJ", "lat": -22.4683, "lon": -44.4467, "hashtag": "resende"},
-    {"nome": "Angra dos Reis - RJ", "lat": -23.0067, "lon": -44.3181, "hashtag": "angradosreis"},
 ]
 
 # ------------------------------------------------------------------
