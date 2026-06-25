@@ -208,13 +208,15 @@ def card_provocacao(caminho):
     img = Image.new("RGBA", (W, H))
     gradiente(img, (24, 47, 79), (52, 92, 140))
     dr = ImageDraw.Draw(img)
-    centro(dr, "E A SUA CIDADE?", 360, fonte(72))
-    centro(dr, "Faltou a previs\u00e3o da sua cidade", 520, fonte(44, False), (225, 235, 244))
-    centro(dr, "do Sul Fluminense?", 580, fonte(44, False), (225, 235, 244))
-    caixa(img, [140, 760, W - 140, 1080], 36, 45)
-    centro(dr, "Comenta o nome dela", 840, fonte(50))
-    centro(dr, "que a gente inclui no", 920, fonte(50))
-    centro(dr, "pr\u00f3ximo post! \U0001F447", 1000, fonte(50))
+    centro(dr, "MOSTRE A SUA CIDADE!", 320, fonte(64))
+    centro(dr, "Tem foto ou v\u00eddeo do tempo", 470, fonte(40, False), (225, 235, 244))
+    centro(dr, "a\u00ed na sua cidade?", 525, fonte(40, False), (225, 235, 244))
+    centro(dr, "A GENTE PUBLICA AQUI! \U0001F4F8", 600, fonte(42), (255, 209, 102))
+    caixa(img, [140, 760, W - 140, 1120], 36, 45)
+    centro(dr, "Manda no Direct \U0001F4E9", 830, fonte(50))
+    centro(dr, "sua foto ou v\u00eddeo da", 910, fonte(50))
+    centro(dr, "chuva, sol, c\u00e9u ou rua", 990, fonte(50))
+    centro(dr, "e a gente compartilha! \U0001F64C", 1070, fonte(46), (255, 209, 102))
     centro(dr, "Salve este post \U0001F4CC", 1300, fonte(46, False), (235, 242, 248))
     centro(dr, "Marque algu\u00e9m da regi\u00e3o", 1380, fonte(46, False), (235, 242, 248))
     centro(dr, "Siga @previsaovr \u2022 todos os dias", 1800, fonte(36), (230, 238, 246))
@@ -373,7 +375,8 @@ def main():
                    f"A previs\u00e3o de hoje ({hoje.day}/{hoje.month}) para as principais cidades da regi\u00e3o:\n\n"
                    "\U0001F4CD Volta Redonda \u2022 Porto Real \u2022 Barra Mansa \u2022 Resende\n\n"
                    "Arrasta para o lado para ver a sua cidade \u2192\n"
-                   "Faltou a sua? Comenta aqui que a gente inclui! \U0001F447\n\n"
+                   "Faltou a sua cidade? Comenta aqui que a gente inclui! \U0001F447\n\n"
+                   "\U0001F4F8 Manda no Direct sua foto ou v\u00eddeo do tempo a\u00ed na sua cidade que a gente publica no perfil! \U0001F64C\n\n"
                    "Siga @previsaovr para receber todos os dias \U0001F4F2\n\n"
                    "#previsaodotempo #sulfluminense #voltaredonda #portoreal #barramansa #resende #clima #rj #bomdia")
         if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
