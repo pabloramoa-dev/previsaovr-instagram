@@ -222,6 +222,70 @@ def card_provocacao(caminho):
     centro(dr, "Siga @previsaovr \u2022 todos os dias", 1800, fonte(36), (230, 238, 246))
     img.convert("RGB").save(caminho, "PNG")
 
+def montar_panorama(d):
+    """Analisa os proximos 5 dias e devolve (titulo_frases, legenda_frases)."""
+    daily = d["daily"]
+    codes = daily["weather_code"]
+    maxs = daily["temperature_2m_max"]
+    mins = daily["temperature_2m_min"]
+    chuvas = daily.get("precipitation_probability_max") or [0] * len(codes)
+    fim = min(6, len(codes))
+    idxs = list(range(1, fim))
+    n_janela = len(idxs)
+    def conta(cond):
+        return sum(1 for i in idxs if cond(i))
+    dias_frio = conta(lambda i: maxs[i] < 23 or mins[i] < 14)
+    dias_chuva = conta(lambda i: chuvas[i] >= 60)
+    dias_chuva_leve = conta(lambda i: 40 <= chuvas[i] < 60)
+    dias_calor = conta(lambda i: maxs[i] >= 32)
+    dias_sol = conta(lambda i: codes[i] <= 2 and chuvas[i] < 40)
+    frases = []
+    if dias_frio >= 1:
+        p = "dia" if dias_frio == 1 else "dias"
+        frases.append(f"Ainda teremos mais {dias_frio} {p} de frio pela frente")
+    if dias_chuva >= 1:
+        p = "dia" if dias_chuva == 1 else "dias"
+        frases.append(f"Prepare o guarda-chuva: {dias_chuva} {p} de chuva pela frente")
+    elif dias_chuva_leve >= 2:
+        frases.append(f"Pode pintar chuva em {dias_chuva_leve} dias da semana")
+    if dias_calor >= 1:
+        p = "dia" if dias_calor == 1 else "dias"
+        frases.append(f"Calor forte chegando: {dias_calor} {p} acima de 32 graus")
+    if dias_sol >= 1:
+        p = "dia" if dias_sol == 1 else "dias"
+        frases.append(f"Sol firme em {dias_sol} {p} para aproveitar")
+    if not frases:
+        frases.append("Tempo estavel e sem grandes mudancas nos proximos dias")
+    return frases, {
+        "frio": dias_frio, "chuva": dias_chuva, "calor": dias_calor,
+        "sol": dias_sol, "janela": n_janela,
+    }
+
+
+def card_panorama(d, frases, caminho):
+    """Card do meio-dia: panorama dos proximos 5 dias na regiao."""
+    img = Image.new("RGBA", (W, H))
+    gradiente(img, (20, 33, 61), (58, 90, 134))
+    dr = ImageDraw.Draw(img)
+    centro(dr, "PANORAMA DA SEMANA", 180, fonte(58))
+    centro(dr, "Sul Fluminense \u2022 pr\u00f3ximos 5 dias", 270, fonte(38, False), (200, 214, 230))
+    caixa(img, [110, 420, W - 110, 1480], 36, 40)
+    y = 520
+    for fr in frases[:5]:
+        if len(fr) > 34:
+            corte = fr.rfind(" ", 0, 34)
+            l1, l2 = fr[:corte], fr[corte + 1:]
+            centro(dr, l1, y, fonte(40))
+            centro(dr, l2, y + 56, fonte(40))
+            y += 170
+        else:
+            centro(dr, fr, y, fonte(42))
+            y += 150
+    centro(dr, "Toda semana o resumo das", 1560, fonte(36, False), (220, 230, 242))
+    centro(dr, "pr\u00f3ximas mudan\u00e7as do tempo \U0001F4C5", 1620, fonte(36, False), (220, 230, 242))
+    centro(dr, "Siga @previsaovr \u2022 todos os dias", 1820, fonte(34), (210, 222, 238))
+    img.convert("RGB").save(caminho, "PNG")
+
 
 def card_angra(d, caminho):
     """Post de sexta Ã  noite: previsÃ£o de SÃBADO para Angra dos Reis."""
@@ -383,6 +447,26 @@ def main():
             publicar_carrossel(urls, legenda)
         else:
             print("Sem credenciais \u2014 apenas os slides foram gerados.")
+            print("Legenda:\n", legenda)
+        return
+    if modo == "panorama":
+        ref = CIDADES[0]  # Volta Redonda como referencia regional
+        d = buscar_previsao(ref["lat"], ref["lon"])
+        frases, resumo = montar_panorama(d)
+        arquivo = f"imagens/panorama-{hoje.isoformat()}.png"
+        card_panorama(d, frases, arquivo)
+        print(f"Card panorama gerado: {arquivo}")
+        corpo = "\n".join(f"\u2022 {fr}" for fr in frases)
+        legenda = ("\U0001F4C5 Panorama da semana no Sul Fluminense!\n\n"
+                   f"O que vem pela frente nos pr\u00f3ximos dias:\n{corpo}\n\n"
+                   "Se programe e n\u00e3o seja pego de surpresa! \U0001F326\uFE0F\n\n"
+                   "Siga @previsaovr para o resumo todos os dias \U0001F4F2\n\n"
+                   "#previsaodotempo #sulfluminense #clima #rj #voltaredonda #tempo")
+        if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
+            url_card = f"{raw_base}/{arquivo}"
+            publicar_instagram(url_card, legenda)
+        else:
+            print("Sem credenciais \u2014 apenas a imagem foi gerada.")
             print("Legenda:\n", legenda)
         return
     for cidade in CIDADES:
