@@ -1,9 +1,9 @@
-name: Post de Angra (sexta a noite)
+name: Post de Angra (sexta as 15h)
 
 on:
   schedule:
-    # 23:00 UTC de sexta = 20:00 (Brasilia, UTC-3) de sexta
-    - cron: "0 23 * * 5"
+    # 18:00 UTC de sexta = 15:00 (Brasilia, UTC-3) de sexta
+    - cron: "0 18 * * 5"
   workflow_dispatch:
 
 permissions:
