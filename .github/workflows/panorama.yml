@@ -1,0 +1,41 @@
+name: Panorama da semana (meio-dia)
+
+on:
+  schedule:
+    # 15:00 UTC = 12:00 (Brasilia, UTC-3)
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  postar-panorama:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests pillow
+
+      - name: Gerar card do panorama
+        run: python bot.py panorama
+
+      - name: Commitar imagem
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add imagens/
+          git commit -m "card panorama" || echo "nada para commitar"
+          git push
+
+      - name: Publicar no Instagram
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          REPO_RAW_BASE: https://raw.githubusercontent.com/${{ github.repository }}/main
+        run: python bot.py panorama
