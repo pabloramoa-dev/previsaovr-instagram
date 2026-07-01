@@ -331,16 +331,18 @@ def card_angra(d, caminho):
     return cond, maxi, mini, chuva
 
 def _aguardar_imagem(url_imagem):
-    """Aguarda a imagem ficar publicamente acessivel no raw.githubusercontent.
-    Apos o git push, o CDN pode levar alguns segundos para servir o arquivo."""
-    for tentativa in range(12):
+    """Aguarda a imagem ficar acessivel no raw.githubusercontent.
+    Usa GET + cache-busting para evitar 404 negativo cacheado pelo CDN."""
+    for tentativa in range(20):
         try:
-            head = requests.head(url_imagem, timeout=15, allow_redirects=True)
-            if head.status_code == 200:
+            busting = f"{url_imagem}?v={int(time.time())}"
+            r = requests.get(busting, timeout=20, allow_redirects=True)
+            if r.status_code == 200 and r.headers.get("content-type", "").startswith("image"):
                 return
+            print(f"Tentativa {tentativa + 1}: status {r.status_code}")
         except requests.RequestException as e:
-            print(f"Tentativa {tentativa + 1}: erro ao checar imagem -> {e}")
-        time.sleep(6)
+            print(f"Tentativa {tentativa + 1}: erro -> {e}")
+        time.sleep(8)
     raise RuntimeError(f"Imagem nao ficou acessivel a tempo: {url_imagem}")
 
 
