@@ -3,7 +3,7 @@
 Salva em trends/fila_pendente.json. NAO faz scraping de Instagram/TikTok; usa web como inspiracao de pauta."""
 import os, json, datetime, anthropic
 
-MODEL = "claude-sonnet-4-5"
+MODEL = "claude-3-5-haiku-latest"
 WEB_SEARCH_TOOL = {"type": "web_search_20250305", "name": "web_search", "max_uses": 5}
 ARQUIVO_SAIDA = os.path.join(os.path.dirname(__file__), "fila_pendente.json")
 
