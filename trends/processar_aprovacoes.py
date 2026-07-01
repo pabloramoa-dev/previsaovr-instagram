@@ -2,11 +2,31 @@
 """Le os cliques dos botoes no Telegram (getUpdates) e aplica dupla confirmacao:
 aprovar trend -> gera previa e reenvia -> aprovar previa (publicar) -> publica no Instagram.
 Reaproveita secrets TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, IG_USER_ID, IG_ACCESS_TOKEN."""
-import os, json, datetime, requests
+import os, json, datetime, time, requests
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from gerar_post import gerar
+import bot
 from bot import publicar_instagram
+
+
+def _aguardar_imagem_robusto(url_imagem):
+    """Substitui a versao original: usa GET + cache-busting p/ evitar 404 cacheado pelo CDN."""
+    for tentativa in range(20):
+        try:
+            busting = url_imagem + "?v=" + str(int(time.time()))
+            r = requests.get(busting, timeout=20, allow_redirects=True)
+            if r.status_code == 200 and r.headers.get("content-type", "").startswith("image"):
+                return
+            print("Tentativa " + str(tentativa + 1) + ": status " + str(r.status_code))
+        except requests.RequestException as e:
+            print("Tentativa " + str(tentativa + 1) + ": erro -> " + str(e))
+        time.sleep(8)
+    raise RuntimeError("Imagem nao ficou acessivel a tempo: " + url_imagem)
+
+
+# Aplica a correcao sem alterar o bot.py original
+bot._aguardar_imagem = _aguardar_imagem_robusto
 
 TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
