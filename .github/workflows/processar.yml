@@ -1,0 +1,34 @@
+name: Trends - processar aprovacoes
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  processar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install anthropic requests pillow
+      - name: Processar aprovacoes
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          REPO_RAW_BASE: https://raw.githubusercontent.com/${{ github.repository }}/main
+        run: python trends/processar_aprovacoes.py
+      - name: Commitar imagens e estado
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add imagens/ trends/
+          git commit -m "previa/publicacao trend" || echo "nada a commitar"
+          git push
