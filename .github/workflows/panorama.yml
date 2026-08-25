@@ -1,9 +1,10 @@
 name: Panorama da semana (meio-dia)
 
 on:
-  schedule:
+  # schedule desativado em 2026-08-25: pipeline migrado para previsao-sul-fluminense
+  # schedule:
     # 15:00 UTC = 12:00 (Brasilia, UTC-3)
-    - cron: "0 15 * * *"
+  # - cron: "0 15 * * *"
   workflow_dispatch:
 
 permissions:
