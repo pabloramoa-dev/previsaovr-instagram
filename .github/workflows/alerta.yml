@@ -1,9 +1,10 @@
 name: Detector de alertas climaticos
 
 on:
-  schedule:
+  # schedule desativado em 2026-08-25: pipeline migrado para previsao-sul-fluminense
+  # schedule:
     # a cada 30 minutos (solucao-ponte ate a VM Oracle ficar pronta)
-    - cron: "*/30 * * * *"
+  # - cron: "*/30 * * * *"
   workflow_dispatch:
 
 permissions:

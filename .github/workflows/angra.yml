@@ -1,9 +1,10 @@
 name: Post de Angra (sexta as 15h)
 
 on:
-  schedule:
+  # schedule desativado em 2026-08-25: pipeline migrado para previsao-sul-fluminense
+  # schedule:
     # 18:00 UTC de sexta = 15:00 (Brasilia, UTC-3) de sexta
-    - cron: "0 18 * * 5"
+  # - cron: "0 18 * * 5"
   workflow_dispatch:
 
 permissions:

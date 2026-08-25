@@ -1,9 +1,10 @@
 name: Carrossel diario (manha)
 
 on:
-  schedule:
+  # schedule desativado em 2026-08-25: pipeline migrado para previsao-sul-fluminense
+  # schedule:
     # 09:30 UTC = 06:30 (Brasilia, UTC-3)
-    - cron: "30 9 * * *"
+  # - cron: "30 9 * * *"
   workflow_dispatch:
 
 permissions:
