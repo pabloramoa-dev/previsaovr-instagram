@@ -1,0 +1,46 @@
+name: Limpeza de MP4s de alertas
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/limpeza-midia.yml"
+  schedule:
+    - cron: "50 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  limpar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            .github/workflows/limpeza-midia.yml
+          sparse-checkout-cone-mode: false
+
+      - name: Remover MP4s antigos sem baixar os blobs
+        run: |
+          set -euo pipefail
+          limite=$(date -u -d "2 days ago" +%F)
+          git config user.name "bot"
+          git config user.email "bot@users.noreply.github.com"
+
+          git ls-files 'imagens/alerta-*.mp4' | while read -r arquivo; do
+            nome=$(basename "$arquivo")
+            data=$(echo "$nome" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | tail -1 || true)
+            if [ -n "$data" ] && [[ "$data" < "$limite" ]]; then
+              git update-index --force-remove -- "$arquivo"
+              echo "removendo $arquivo"
+            fi
+          done
+
+          git diff --cached --quiet && exit 0
+          git commit -q -m "limpeza: remover MP4s antigos de alertas"
+          for i in 1 2 3; do git pull --rebase && git push -q && exit 0; sleep 5; done
+          exit 1
