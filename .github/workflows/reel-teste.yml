@@ -32,4 +32,4 @@ jobs:
         with:
           name: reel-exemplo
           path: imagens/exemplo-alerta.mp4
-          retention-days: 3
+          retention-days: 1
