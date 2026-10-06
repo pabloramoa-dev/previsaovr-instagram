@@ -422,6 +422,24 @@ def publicar_fila():
                     import time as _t; _t.sleep(5)
                     url_mp4 = f"{raw_base}/{mp4_path}"
                     _publicar_reel(url_mp4, item["legenda"])
+
+                    # O Instagram ja copiou o video. Nao ha motivo para manter
+                    # este MP4 pesado versionado no repositorio.
+                    try:
+                        _sp.run(["git", "rm", "-f", "--ignore-unmatch", mp4_path], check=False)
+                        _sp.run(["git", "commit", "-m", f"limpeza: {os.path.basename(mp4_path)} publicado"], check=False)
+                        for _tentativa in range(3):
+                            pull = _sp.run(["git", "pull", "--rebase"], check=False)
+                            push = _sp.run(["git", "push"], check=False)
+                            if pull.returncode == 0 and push.returncode == 0:
+                                break
+                            _t.sleep(5)
+                        try:
+                            os.remove(mp4_path)
+                        except FileNotFoundError:
+                            pass
+                    except Exception as limpeza_erro:
+                        print(f"Limpeza do MP4 ignorada (sera refeita pelo workflow diario): {limpeza_erro}")
                 except Exception as re:
                     print(f"Reel ignorado (erro nao critico): {re}")
         except Exception as e:
