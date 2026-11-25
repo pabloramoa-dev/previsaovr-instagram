@@ -435,6 +435,88 @@ def publicar_carrossel(urls_imagens, legenda):
     print("Carrossel publicado! ID:", r.json().get("id"))
 
 
+
+def gancho_rotativo(locs, data, quando, *, ancora=None, canal=""):
+    """Gancho de retenção por edição, com fatos validados e sem alarmismo."""
+    from datetime import date, timedelta
+    from math import isfinite
+    def num(x):
+        return isinstance(x, (int, float)) and not isinstance(x, bool) and isfinite(x)
+    def valor(c, *keys):
+        return next((c[k] for k in keys if num(c.get(k))), None)
+    def nome(c):
+        return c.get("name") or c.get("nome") or c.get("point")
+    validos = [c for c in locs if nome(c) and valor(c, "max_c", "max") is not None]
+    if not validos:
+        return "Confira a previsão " + quando + "."
+    try:
+        dia = date.fromisoformat(str(data)[:10])
+    except (ValueError, TypeError):
+        dia = date.today()
+    noite = quando == "amanhã"
+    pub = dia - timedelta(days=int(noite))
+    fase = sum(ord(ch) for ch in canal) % 12
+    slot = pub.toordinal() * 2 + int(noite) + fase
+    c = ancora if ancora in validos else validos[(slot // 2 + int(noite)) % len(validos)]
+    n = nome(c)
+    mx = round(valor(c, "max_c", "max"))
+    mn0 = valor(c, "min_c", "min")
+    mn = round(mn0) if mn0 is not None else None
+    outros = [x for x in validos if nome(x) != n]
+    outro = max(outros, key=lambda x: abs(valor(x, "max_c", "max") - mx), default=None)
+    dif = round(valor(outro, "max_c", "max")) if outro else mx
+    fato = f"{n}: {mx} graus {quando}."
+    faixa = f"{n}: de {mn} a {mx} graus {quando}." if mn is not None else fato
+    # 12 famílias: identificação, curiosidade, antecipação, contraste,
+    # proteção, urgência, surpresa, pergunta, comparação, benefício,
+    # informação específica e expectativa. Condições especiais têm gate.
+    familias = {
+        0: (f"Mora em {n}? {mx} graus {quando}.", f"Alô, {n}! Máxima de {mx} graus {quando}.", fato, f"{n}, sua máxima: {mx} graus {quando}."),
+        1: (f"Quanto vai fazer em {n}? {mx} graus {quando}.", f"{n}: sabe qual a máxima {quando}? {mx} graus.", f"{fato} E na sua cidade?", f"{n}: como fica {quando}? {mx} graus."),
+        2: (f"Planeje {quando}: {faixa}", f"Já se programe: {faixa}", f"Para {quando}, {faixa}", f"Antecipe seus planos: {fato}"),
+        4: (f"Antes de sair, {fato}", f"Vai sair em {n}? {mx} graus {quando}.", f"Prepare-se: {faixa}", f"De olho na temperatura: {fato}"),
+        7: (f"Vai fazer calor em {n}? {mx} graus {quando}.", f"Casaco ou roupa leve? {faixa}", f"Vai sair {quando}? {faixa}", f"Como se vestir em {n}? {faixa}"),
+        8: (f"Compare as temperaturas: {fato}", f"Veja os números: {fato}", f"De cidade em cidade: {fato}", f"Compare com a sua rotina: {faixa}"),
+        9: (f"Organize seu dia: {faixa}", f"Para planejar a rotina: {fato}", f"Seu dia em {n}: {mx} graus {quando}.", f"Programe sua saída: {fato}"),
+        10: (fato, f"Máxima de {mx} graus em {n} {quando}.", faixa, f"{quando.capitalize()}, {n} pode chegar a {mx} graus."),
+        11: (f"{fato} E as demais cidades?", f"{fato} Veja as outras temperaturas.", f"Começando por {n}: {mx} graus {quando}.", f"Primeiro, {fato}"),
+    }
+    if mn is not None and mx - mn >= 7:
+        familias[3] = (f"De {mn} a {mx} graus em {n} {quando}.", f"{n}: mínima de {mn}, máxima de {mx} {quando}.", faixa, f"Do mínimo de {mn} ao máximo de {mx} graus em {n} {quando}.")
+    if outro and abs(dif - mx) >= 4:
+        familias[6] = (f"{n}: {mx} graus. {nome(outro)}: {dif} {quando}.", f"Olha a diferença {quando}: {n}, {mx}; {nome(outro)}, {dif} graus.", f"Temperaturas bem diferentes: {n}, {mx}; {nome(outro)}, {dif} graus {quando}.", f"{n} e {nome(outro)}: {mx} e {dif} graus {quando}.")
+        familias[8] = familias[6][::-1]
+    rajada = valor(c, "gust_kmh", "wind_gust_kmh", "rajada_kmh")
+    if rajada is not None and rajada >= 60:
+        familias[5] = (f"Atenção em {n}: rajadas fortes {quando}.", f"Vento forte previsto em {n} {quando}.", f"{n}: cuidado com as rajadas {quando}.", f"De olho no vento forte em {n} {quando}.")
+    elif mx >= 38:
+        familias[5] = (f"Atenção em {n}: máxima de {mx} graus {quando}.", f"{n}: calor intenso, {mx} graus {quando}.", f"Cuidado com o calor em {n}: {mx} graus {quando}.", f"{mx} graus previstos em {n} {quando}: cuide-se.")
+    # Se um fenômeno não existe, mantém a alternância sem fabricar o fato.
+    k = slot % 12
+    fallback = {3: 9, 5: 11, 6: 0}
+    k = k if k in familias else fallback.get(k, 10)
+    return familias[k][(slot // 12) % 4]
+
+
+def engajamento_rotativo(data, quando, local="", canal=""):
+    """Um pedido útil por edição, com rodízio independente do gancho."""
+    from datetime import date, timedelta
+    try:
+        dia = date.fromisoformat(str(data)[:10])
+    except (ValueError, TypeError):
+        dia = date.today()
+    noite = quando == "amanhã"
+    pub = dia - timedelta(days=int(noite))
+    slot = pub.toordinal() * 2 + int(noite) + sum(ord(ch) for ch in canal)
+    familias = (
+        ("Envie a previsão a quem vai sair.", "Compartilhe com quem mora na região.", "Manda pra quem precisa dessa previsão.", "Envie para quem vai viajar."),
+        ("Qual sua cidade? Comente aqui.", "Como está o tempo aí? Comente.", "De qual bairro você nos acompanha?", "Qual cidade quer ver por aqui?"),
+        ("Salve para consultar antes de sair.", "Guarde esta previsão para seu dia.", "Salve o boletim para planejar.", "Salve para conferir mais tarde."),
+        ("Siga para acompanhar a previsão diária.", "Siga e acompanhe o tempo na região.", "Acompanhe o perfil para novos boletins.", "Siga para conferir a próxima previsão."),
+    )
+    return familias[slot % len(familias)][(slot // len(familias)) % 4]
+
+
 def main():
     modo = sys.argv[1] if len(sys.argv) > 1 else "diario"
     raw_base = os.environ.get("REPO_RAW_BASE", "").rstrip("/")
@@ -537,6 +619,14 @@ def main():
                        f"Vai sair de casa? {dica}\n\n"
                        f"Siga @previsaovr para receber todos os dias \U0001f4f2\n\n"
                        f"#previsaodotempo #{slug} #sulfluminense #tempovr #clima #bomdia")
+        if modo in ("diario", "amanha"):
+            quando = "amanhã" if modo == "amanha" else "hoje"
+            alvo = hoje + datetime.timedelta(days=int(modo == "amanha"))
+            ponto = {"nome": nome_curto, "min": float(mini), "max": float(maxi)}
+            partes = legenda.split("\n\n")
+            partes[0] = gancho_rotativo([ponto], alvo.isoformat(), quando, ancora=ponto, canal=slug)
+            partes[-2] = engajamento_rotativo(alvo.isoformat(), quando, nome_curto, slug)
+            legenda = "\n\n".join(partes)
         print(f"Card gerado: {arquivo}")
         if raw_base and os.environ.get("IG_ACCESS_TOKEN"):
             url_card = f"{raw_base}/{arquivo}"
