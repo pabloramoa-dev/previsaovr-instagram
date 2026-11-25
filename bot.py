@@ -486,7 +486,7 @@ def gancho_rotativo(locs, data, quando, *, ancora=None, canal=""):
     if outro and abs(dif - mx) >= 4:
         familias[6] = (f"{n}: {mx} graus. {nome(outro)}: {dif} {quando}.", f"Olha a diferença {quando}: {n}, {mx}; {nome(outro)}, {dif} graus.", f"Temperaturas bem diferentes: {n}, {mx}; {nome(outro)}, {dif} graus {quando}.", f"{n} e {nome(outro)}: {mx} e {dif} graus {quando}.")
         familias[8] = familias[6][::-1]
-    rajada = valor(c, "gust_kmh", "wind_gust_kmh", "rajada_kmh")
+    rajada = valor(c, "wind_gust_max_kmh", "gust_kmh", "wind_gust_kmh", "rajada_kmh")
     if rajada is not None and rajada >= 60:
         familias[5] = (f"Atenção em {n}: rajadas fortes {quando}.", f"Vento forte previsto em {n} {quando}.", f"{n}: cuidado com as rajadas {quando}.", f"De olho no vento forte em {n} {quando}.")
     elif mx >= 38:
@@ -495,7 +495,11 @@ def gancho_rotativo(locs, data, quando, *, ancora=None, canal=""):
     k = slot % 12
     fallback = {3: 9, 5: 11, 6: 0}
     k = k if k in familias else fallback.get(k, 10)
-    return familias[k][(slot // 12) % 4]
+    frase = familias[k][(slot // 12) % 4]
+    # Mantém a abertura curta mesmo com nomes compostos.
+    if len(frase.split()) > 12:
+        frase = fato
+    return frase
 
 
 def engajamento_rotativo(data, quando, local="", canal=""):
