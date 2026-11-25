@@ -518,6 +518,11 @@ def engajamento_rotativo(data, quando, local="", canal=""):
         ("Salve para consultar antes de sair.", "Guarde esta previsão para seu dia.", "Salve o boletim para planejar.", "Salve para conferir mais tarde."),
         ("Siga para acompanhar a previsão diária.", "Siga e acompanhe o tempo na região.", "Acompanhe o perfil para novos boletins.", "Siga para conferir a próxima previsão."),
     )
+    if local and slot % len(familias) == 0:
+        return (f"Envie a previsão para alguém de {local}.",
+                f"Manda pra quem mora em {local} conferir a previsão.",
+                f"Compartilhe com quem vai sair em {local}.",
+                f"Envie para quem conhece alguém de {local}.")[(slot // len(familias)) % 4]
     return familias[slot % len(familias)][(slot // len(familias)) % 4]
 
 
