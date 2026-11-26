@@ -81,7 +81,7 @@ def centro(dr, texto, y, f, cor=(255, 255, 255)):
 
 def buscar_previsao(lat, lon):
     url = (f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
-           "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max"
+           "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum"
            "&current=temperature_2m,relative_humidity_2m,weather_code"
            "&timezone=America%2FSao_Paulo&forecast_days=7")
     r = requests.get(url, timeout=30)
@@ -103,6 +103,24 @@ def blocos_info(img, dr, itens, y=1180):
     return ImageDraw.Draw(img)
 
 
+def volume_diario(d, indice):
+    from math import isfinite
+    volumes = d.get("daily", {}).get("precipitation_sum") or []
+    mm = volumes[indice] if len(volumes) > indice else None
+    if isinstance(mm, (int, float)) and not isinstance(mm, bool) and isfinite(mm) and mm >= 50:
+        return f"{mm:g}".replace(".", ",")
+    return None
+
+
+def faixa_chuva_24h(img, d, indice):
+    mm = volume_diario(d, indice)
+    if mm is not None:
+        dr = ImageDraw.Draw(img)
+        dr.rectangle((0, 60, W, 190), fill=(140, 20, 20))
+        centro(dr, "GRANDE VOLUME DE CHUVA", 70, fonte(40))
+        centro(dr, f"{mm} mm em 24h", 125, fonte(38))
+
+
 def card_diario(cidade, d, caminho):
     """Card de HOJE \u2014 postado \u00e0s 8h, com temperatura atual."""
     img = Image.new("RGBA", (W, H))
@@ -122,6 +140,7 @@ def card_diario(cidade, d, caminho):
     dr = blocos_info(img, dr, [(f"{maxi}\u00b0", "M\u00e1xima"), (f"{mini}\u00b0", "M\u00ednima"),
                                (f"{chuva}%", "Chuva"), (f"{umid}%", "Umidade")])
     centro(dr, "Siga @previsaovr \u2022 todos os dias", 1800, fonte(36), (230, 238, 246))
+    faixa_chuva_24h(img, d, 0)
     img.convert("RGB").save(caminho, "PNG")
     return cond, maxi, mini, chuva
 
@@ -149,6 +168,7 @@ def card_amanha(cidade, d, caminho):
     dr = blocos_info(img, dr, [(f"{maxi}\u00b0", "M\u00e1xima"), (f"{mini}\u00b0", "M\u00ednima"),
                                (f"{chuva}%", "Chuva")])
     centro(dr, "Amanh\u00e3 \u00e0s 8h tem atualiza\u00e7\u00e3o \u2022 @previsaovr", 1800, fonte(36), (230, 238, 246))
+    faixa_chuva_24h(img, d, 1)
     img.convert("RGB").save(caminho, "PNG")
     return cond, maxi, mini, chuva
 
@@ -634,6 +654,11 @@ def main():
             ponto = {"nome": nome_curto, "min": float(mini), "max": float(maxi)}
             partes = legenda.split("\n\n")
             partes[0] = gancho_rotativo([ponto], alvo.isoformat(), quando, ancora=ponto, canal=slug)
+            mm = volume_diario(d, int(modo == "amanha"))
+            if mm is not None:
+                partes[0] = (f"Se você mora em {nome_curto}, preste atenção! "
+                             f"Grande volume de chuva previsto {quando}: até {mm} mm em 24 horas. "
+                             "Evite áreas alagadas.")
             partes[-2] = engajamento_rotativo(alvo.isoformat(), quando, nome_curto, slug)
             legenda = "\n\n".join(partes)
         print(f"Card gerado: {arquivo}")
