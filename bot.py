@@ -474,6 +474,11 @@ def gancho_rotativo(locs, data, quando, *, ancora=None, canal=""):
     except (ValueError, TypeError):
         dia = date.today()
     noite = quando == "amanhã"
+    # Referência editorial de novembro: preservar a abertura simples da noite.
+    # Alertas meteorológicos graves continuam prioritários nos chamadores.
+    if noite:
+        return "Amanhã, o tempo em Volta Redonda fica assim."
+
     pub = dia - timedelta(days=int(noite))
     fase = sum(ord(ch) for ch in canal) % 12
     slot = pub.toordinal() * 2 + int(noite) + fase
@@ -530,6 +535,10 @@ def engajamento_rotativo(data, quando, local="", canal=""):
     except (ValueError, TypeError):
         dia = date.today()
     noite = quando == "amanhã"
+    # Retenção: um CTA contextual; preserva o pedido de compartilhamento noturno.
+    if noite:
+        return "Manda pra quem vai sair amanhã."
+
     pub = dia - timedelta(days=int(noite))
     slot = pub.toordinal() * 2 + int(noite) + sum(ord(ch) for ch in canal)
     familias = (
